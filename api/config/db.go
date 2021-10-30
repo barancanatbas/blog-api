@@ -2,9 +2,11 @@ package config
 
 import (
 	"app/api/model"
+	"os"
 
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/mysql"
+	"github.com/joho/godotenv"
 )
 
 // bu nesneyi model kısmında çağırırım
@@ -18,7 +20,14 @@ func Init() {
 
 // bağlantı açar
 func Connect() *gorm.DB {
-	db, err := gorm.Open("mysql", "root:mysql123@/restapideneme?charset=utf8&parseTime=True&loc=Local")
+	godotenv.Load(".env")
+
+	USER := os.Getenv("USER")
+	PASSWORD := os.Getenv("PASSWORD")
+	HOST := os.Getenv("HOST")
+	DBNAME := os.Getenv("DBNAME")
+
+	db, err := gorm.Open("mysql", USER+":"+PASSWORD+HOST+DBNAME+"?charset=utf8&parseTime=True&loc=Local")
 
 	if err != nil {
 		panic(err.Error())
