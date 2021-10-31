@@ -8,10 +8,11 @@ import (
 
 type User struct {
 	Base
-	Name    string `json:"name"`
-	Surname string `json:"surname"`
-	Age     int    `json:"age"`
-	Job     string `json:"job"`
+	Name     string `json:"name"`
+	Surname  string `json:"surname"`
+	Age      int    `json:"age"`
+	Job      string `json:"job"`
+	Password string `json:"-"`
 }
 
 func (u *User) Prepare() {
@@ -61,4 +62,15 @@ func (u *User) SaveUser(db *gorm.DB) (*User, error) {
 	}
 
 	return u, nil
+}
+
+func (u *User) Login(db *gorm.DB) error {
+	user := User{}
+
+	err := db.Debug().Model(&user).Where("password = ? and name = ?", u.Password, u.Name).Take(&user).Error
+
+	if err != nil {
+		return err
+	}
+	return nil
 }

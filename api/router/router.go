@@ -11,6 +11,7 @@ func Set(e *echo.Echo) {
 
 	e.GET("/post", controller.GetPosts)
 
+	e.POST("/login", controller.Login)
 	e.GET("/users", controller.GetUsers)
 	e.GET("/user/:id", controller.GetUser)
 	e.PUT("/user", controller.DeleteUser)

@@ -8,9 +8,22 @@ import (
 	"fmt"
 	"io/ioutil"
 	"strconv"
+	"time"
 
+	"github.com/golang-jwt/jwt"
 	"github.com/labstack/echo/v4"
 )
+
+type LoginUser struct {
+	Name     string `json:"name"`
+	Password string `json:"password"`
+}
+
+type JwtCustom struct {
+	Name string `json:"name"`
+	Auth bool   `json:"auth"`
+	jwt.StandardClaims
+}
 
 func GetUsers(c echo.Context) error {
 
@@ -92,4 +105,50 @@ func SaveUser(c echo.Context) error {
 	}
 
 	return r.Success(c, result)
+}
+
+func Login(c echo.Context) error {
+	read, err := ioutil.ReadAll(c.Request().Body)
+
+	if err != nil {
+		return r.BadRequest(c, "hata var read")
+	}
+
+	loginobj := LoginUser{}
+
+	err = json.Unmarshal(read, &loginobj)
+
+	if err != nil {
+		return r.BadRequest(c, "hata var json")
+	}
+	user := model.User{
+		Name:     loginobj.Name,
+		Password: loginobj.Password,
+	}
+
+	err = user.Login(config.Database)
+
+	if err != nil {
+		return r.BadRequest(c, "hata var user login")
+	}
+
+	claims := &JwtCustom{
+		loginobj.Name,
+		true,
+		jwt.StandardClaims{
+			ExpiresAt: time.Now().Add(time.Hour * 72).Unix(),
+		},
+	}
+
+	Token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+
+	t, err := Token.SignedString([]byte("secret"))
+
+	if err != nil {
+		return err
+	}
+	return r.Success(c, echo.Map{
+		"token": &t,
+		"name":  loginobj.Name,
+	})
 }
