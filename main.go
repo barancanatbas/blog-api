@@ -15,4 +15,6 @@ func main() {
 
 	// url yapıları burada
 	router.Set(e)
+
+	defer config.Client.Close()
 }

@@ -2,6 +2,7 @@ package controller
 
 import (
 	"app/api/config"
+	"app/api/helper"
 	"app/api/model"
 	r "app/response"
 	"encoding/json"
@@ -14,6 +15,7 @@ func GetPosts(c echo.Context) error {
 	post := model.Post{}
 
 	posts, err := post.All(config.Database)
+	helper.SetOrGet(&post)
 
 	if err != nil {
 		return r.BadRequest(c, "veriler gelmedi")
