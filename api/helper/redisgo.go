@@ -9,6 +9,8 @@ import (
 	"github.com/gomodule/redigo/redis"
 )
 
+const DEFAULT_EX = 10
+
 func GetPosts(list interface{}) bool {
 	isset, err := redis.Int64(config.Client.Do("EXISTS", "posts"))
 	Err(err)
@@ -21,9 +23,7 @@ func GetPosts(list interface{}) bool {
 func SetPosts(posts *[]model.Post) bool {
 	json, err := json.Marshal(posts)
 	Err(err)
-	fmt.Println("")
-	fmt.Println("json : ", string(json))
-	val, err := config.Client.Do("set", "posts", string(json))
+	val, err := config.Client.Do("set", "posts", string(json), "ex", DEFAULT_EX)
 	Err(err)
 	if val == 0 {
 		return false
