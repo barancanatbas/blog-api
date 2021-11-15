@@ -2,25 +2,37 @@ package helper
 
 import (
 	"app/api/config"
+	"app/api/model"
+	"encoding/json"
 	"fmt"
+
+	"github.com/gomodule/redigo/redis"
 )
 
-func SetOrGet(list interface{}) []interface{} {
-	isset, err := config.Client.Do("exists", "posts")
+func GetPosts(list interface{}) bool {
+	isset, err := redis.Int64(config.Client.Do("EXISTS", "posts"))
 	Err(err)
 	if isset == 0 {
-		val, err := config.Client.Do("hset", "posts", "name", "deneme")
-		Err(err)
-
-		fmt.Println(val)
-		fmt.Println("a")
+		return false
 	}
+	return true
+}
 
-	return nil
+func SetPosts(posts *[]model.Post) bool {
+	json, err := json.Marshal(posts)
+	Err(err)
+	fmt.Println("")
+	fmt.Println("json : ", string(json))
+	val, err := config.Client.Do("set", "posts", string(json))
+	Err(err)
+	if val == 0 {
+		return false
+	}
+	return true
 }
 
 func Err(err error) {
 	if err != nil {
-		panic(err)
+		fmt.Println(err)
 	}
 }
