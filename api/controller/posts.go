@@ -4,10 +4,10 @@ import (
 	"app/api/config"
 	"app/api/helper"
 	"app/api/model"
+	"app/request"
 	r "app/response"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 
 	"github.com/gomodule/redigo/redis"
 	"github.com/labstack/echo/v4"
@@ -41,44 +41,37 @@ func GetPosts(c echo.Context) error {
 }
 
 func GetPost(c echo.Context) error {
+	var req request.PostDeleteReq
 
-	read, err := ioutil.ReadAll(c.Request().Body)
-
-	if err != nil {
-		return r.BadRequest(c, "bir hata oluştu okuma")
+	if helper.Validator(&c, &req) != nil {
+		return nil
 	}
+	userid := helper.AuthId(&c)
 
-	reqpost := model.Post{}
-
-	err = json.Unmarshal(read, &reqpost)
-
+	post, err := model.GetById(config.Database, int(req.ID), uint(userid))
 	if err != nil {
-		return r.BadRequest(c, "bir hata oluştu json ")
-	}
-
-	post, err := reqpost.GetById(config.Database, int(reqpost.ID))
-	if err != nil {
-		return r.BadRequest(c, "bir hata oluştu veri ")
+		return r.BadRequest(c, err.Error())
 	}
 
 	return r.Success(c, post)
 }
 
 func SavePost(c echo.Context) error {
-	read, err := ioutil.ReadAll(c.Request().Body)
 
-	if err != nil {
-		return r.BadRequest(c, "bir hata var read")
+	var req request.PostReq
+
+	if helper.Validator(&c, &req) != nil {
+		return r.BadRequest(c, "hata var")
+	}
+	id := helper.AuthId(&c)
+	db := model.Post{
+		Title:   req.Title,
+		Content: req.Content,
+		Userfk:  id,
 	}
 
-	db := model.Post{}
-
-	err = json.Unmarshal(read, &db)
-
-	if err != nil {
-		return r.BadRequest(c, "bir hata var json unmarshal")
-	}
-	err = db.SavePost(config.Database)
+	fmt.Println(id)
+	err := db.SavePost(config.Database)
 
 	if err != nil {
 		return r.BadRequest(c, "bir hata var veri yok")
@@ -89,49 +82,44 @@ func SavePost(c echo.Context) error {
 }
 
 func DeletePost(c echo.Context) error {
-	read, err := ioutil.ReadAll(c.Request().Body)
 
-	if err != nil {
-		return r.BadRequest(c, "bir hata var read")
+	var req request.PostDeleteReq
+
+	if helper.Validator(&c, &req) != nil {
+		return nil
 	}
-
-	db := model.Post{}
-
-	err = json.Unmarshal(read, &db)
+	userid := helper.AuthId(&c)
+	err := model.DeletePost(config.Database, req.ID, userid)
 
 	if err != nil {
-		return r.BadRequest(c, "bir hata var json")
-	}
-
-	err = db.DeletePost(config.Database)
-
-	if err != nil {
-		return r.BadRequest(c, "silmedi")
+		return r.BadRequest(c, err.Error())
 	}
 
 	return r.Success(c, "Silme işlemi başarılı")
 }
 
 func UpdatePost(c echo.Context) error {
-	read, err := ioutil.ReadAll(c.Request().Body)
+
+	var req request.PostUpdateReq
+
+	// validate işlemi
+	if helper.Validator(&c, &req) != nil {
+		return nil
+	}
+	userid := helper.AuthId(&c)
+
+	db := model.Post{
+		Title:   req.Title,
+		Content: req.Content,
+		Userfk:  userid,
+	}
+	// güncelleme işlemi
+	err := db.UpdatePost(config.Database, uint(req.ID))
 
 	if err != nil {
-		return r.BadRequest(c, "bir hata var read")
+		return r.BadRequest(c, err.Error())
 	}
 
-	db := model.Post{}
-
-	err = json.Unmarshal(read, &db)
-
-	if err != nil {
-		return r.BadRequest(c, "bir hata var json")
-	}
-
-	err = db.UpdatePost(config.Database)
-
-	if err != nil {
-		return r.BadRequest(c, "bir hata update")
-	}
-
+	// response
 	return r.Success(c, "başarılı")
 }

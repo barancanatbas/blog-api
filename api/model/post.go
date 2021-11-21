@@ -1,6 +1,7 @@
 package model
 
 import (
+	"errors"
 	"time"
 
 	"github.com/jinzhu/gorm"
@@ -31,21 +32,25 @@ func (p *Post) All(db *gorm.DB) ([]Post, error) {
 	return posts, err
 }
 
-func (p *Post) GetById(db *gorm.DB, pid int) (*Post, error) {
+func GetById(db *gorm.DB, pid int, userid uint) (*Post, error) {
 
 	post := Post{}
 
-	err := db.Debug().Model(&Post{}).Where("id = ?", pid).Preload("User").Limit(1).Take(&post).Error
+	err := db.Debug().Model(&Post{}).Where("id = ? and userfk = ?", pid, userid).Preload("User").Limit(1).Take(&post)
 
-	if err != nil {
-		return &post, err
+	if err.Error != nil {
+		return &post, err.Error
+	}
+
+	if err.RowsAffected <= 0 {
+		return &post, errors.New("veri yok")
 	}
 
 	return &post, nil
 }
 
 func (p *Post) SavePost(db *gorm.DB) error {
-	err := db.Debug().Model(&Post{}).Create(&p)
+	err := db.Model(&Post{}).Create(&p)
 
 	if err != nil {
 		return err.Error
@@ -54,24 +59,29 @@ func (p *Post) SavePost(db *gorm.DB) error {
 	return nil
 }
 
-func (p *Post) DeletePost(db *gorm.DB) error {
-	err := db.Debug().Delete(&p)
+func DeletePost(db *gorm.DB, id uint32, userid uint32) error {
+	post := &Post{}
+	err := db.Debug().Where("id = ? and userfk = ?", id, userid).Delete(&post)
 
-	if err != nil {
+	if err.Error != nil {
 		return err.Error
+	}
+	if err.RowsAffected <= 0 {
+		return errors.New("bilgiler silinmedi")
 	}
 	return nil
 }
 
-func (p *Post) UpdatePost(db *gorm.DB) error {
-	err := db.Debug().Model(&Post{}).Where("id = ?", p.ID).Updates(Post{
+func (p *Post) UpdatePost(db *gorm.DB, id uint) error {
+	val := db.Model(&Post{}).Where("id = ? and userfk = ?", id, p.Userfk).Updates(Post{
 		Title:   p.Title,
 		Content: p.Content,
-	}).Error
-
-	if err != nil {
-		return err
+	})
+	if val.Error != nil {
+		return val.Error
 	}
-
+	if val.RowsAffected <= 0 {
+		return errors.New("id değeri geçerli değil")
+	}
 	return nil
 }

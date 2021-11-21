@@ -2,7 +2,9 @@ package controller
 
 import (
 	"app/api/config"
+	"app/api/helper"
 	"app/api/model"
+	"app/request"
 	r "app/response"
 	"encoding/json"
 	"fmt"
@@ -10,7 +12,7 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/golang-jwt/jwt"
+	"github.com/dgrijalva/jwt-go"
 	"github.com/labstack/echo/v4"
 )
 
@@ -19,11 +21,7 @@ type LoginUser struct {
 	Password string `json:"password"`
 }
 
-type JwtCustom struct {
-	Name string `json:"name"`
-	Auth bool   `json:"auth"`
-	jwt.StandardClaims
-}
+// özel bir jwt struct
 
 func GetUsers(c echo.Context) error {
 
@@ -108,47 +106,39 @@ func SaveUser(c echo.Context) error {
 }
 
 func Login(c echo.Context) error {
-	read, err := ioutil.ReadAll(c.Request().Body)
-
-	if err != nil {
-		return r.BadRequest(c, "hata var read")
+	var req request.UserLogin
+	if helper.Validator(&c, &req) != nil {
+		return nil
 	}
 
-	loginobj := LoginUser{}
-
-	err = json.Unmarshal(read, &loginobj)
-
-	if err != nil {
-		return r.BadRequest(c, "hata var json")
-	}
 	user := model.User{
-		Name:     loginobj.Name,
-		Password: loginobj.Password,
+		Name:     req.Name,
+		Password: req.Password,
 	}
 
-	err = user.Login(config.Database)
+	err := user.Login(config.Database)
 
 	if err != nil {
 		return r.BadRequest(c, "hata var user login")
 	}
 
-	claims := &JwtCustom{
-		loginobj.Name,
-		true,
-		jwt.StandardClaims{
+	// özel oluşturulmuş bir struct tan bir nesne oluşturduk
+	claims := &config.JwtCustom{
+		Name:          req.Name,
+		Authorization: 1,
+		ID:            uint(user.ID),
+		StandardClaims: jwt.StandardClaims{
 			ExpiresAt: time.Now().Add(time.Hour * 72).Unix(),
 		},
 	}
 
 	Token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-
 	t, err := Token.SignedString([]byte("secret"))
-
 	if err != nil {
 		return err
 	}
 	return r.Success(c, echo.Map{
 		"token": &t,
-		"name":  loginobj.Name,
+		"name":  req.Name,
 	})
 }

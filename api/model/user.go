@@ -65,9 +65,8 @@ func (u *User) SaveUser(db *gorm.DB) (*User, error) {
 }
 
 func (u *User) Login(db *gorm.DB) error {
-	user := User{}
 
-	err := db.Debug().Model(&user).Where("password = ? and name = ?", u.Password, u.Name).Take(&user).Error
+	err := db.Debug().Model(&u).Where("password = ? and name = ?", u.Password, u.Name).Take(&u).Error
 
 	if err != nil {
 		return err
