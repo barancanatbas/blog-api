@@ -14,3 +14,7 @@ type PostUpdateReq struct {
 type PostDeleteReq struct {
 	ID uint32 `json:"id"`
 }
+
+type PostSearchReq struct {
+	Key string `param:"key"`
+}

@@ -15,6 +15,11 @@ type User struct {
 	Password string `json:"-"`
 }
 
+type GetUserResponse struct {
+	User  User
+	Posts []PostForUser
+}
+
 func (u *User) Prepare() {
 	u.CreatedAt = time.Now()
 	u.UpdatedAt = time.Now()
@@ -32,21 +37,26 @@ func (u *User) All(db *gorm.DB) (*[]User, error) {
 	return &users, err
 }
 
-func (u *User) GetUser(db *gorm.DB, uid string) (*User, error) {
-	user := User{}
+func (u *User) GetUser(db *gorm.DB, uid string) (*GetUserResponse, error) {
 
-	err := db.Debug().Model(User{}).Where("id = ?", uid).Take(&user).Error
+	var rsp = GetUserResponse{}
+	err := db.Debug().Model(User{}).Where("id = ?", uid).Take(&rsp.User).Error
 
 	if err != nil {
-		return &User{}, err
+		return &rsp, err
 	}
+	err = db.Debug().Model(Post{}).Where("userfk = ?", uid).Scan(&rsp.Posts).Error
 
-	return &user, nil
+	if err != nil {
+		return &rsp, err
+	}
+	return &rsp, nil
 }
 
-func (u *User) DeleteUser(db *gorm.DB, uid int) (int64, error) {
+func DeleteUser(db *gorm.DB, uid int, userid uint) (int64, error) {
 
-	db = db.Debug().Delete(&u)
+	u := User{}
+	db = db.Debug().Where("userfk = ? and id = ?", userid, uid).Delete(&u)
 	if db.Error != nil {
 		return 0, db.Error
 	}

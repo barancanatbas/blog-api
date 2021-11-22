@@ -15,6 +15,11 @@ type Post struct {
 	Content string `json:"content"`
 }
 
+type PostForUser struct {
+	Title   string `json:"title"`
+	Content string `json:"content"`
+}
+
 func (p *Post) Prepare() {
 	p.CreatedAt = time.Now()
 	p.UpdatedAt = time.Now()
@@ -44,6 +49,18 @@ func GetById(db *gorm.DB, pid int, userid uint) (*Post, error) {
 
 	if err.RowsAffected <= 0 {
 		return &post, errors.New("veri yok")
+	}
+
+	return &post, nil
+}
+
+func SearchPost(db *gorm.DB, key string) (*[]Post, error) {
+	post := []Post{}
+
+	err := db.Model(&Post{}).Preload("User").Where("title like ?", "%"+key+"%").Find(&post)
+
+	if err.Error != nil {
+		return &post, err.Error
 	}
 
 	return &post, nil

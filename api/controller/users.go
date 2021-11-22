@@ -7,7 +7,6 @@ import (
 	"app/request"
 	r "app/response"
 	"encoding/json"
-	"fmt"
 	"io/ioutil"
 	"strconv"
 	"time"
@@ -52,28 +51,16 @@ func GetUser(c echo.Context) error {
 
 func DeleteUser(c echo.Context) error {
 
-	// gelicek olan json objesini bir stract değişkenine atadık
-	user := model.User{}
+	var req request.UserDelRequest
 
-	// gelen request body değerini okuttuk
-	read, err := ioutil.ReadAll(c.Request().Body)
-	// hata kontrolü
-	if err != nil {
-		return r.BadRequest(c, "bir hata oluştu")
+	if helper.Validator(&c, &req) != nil {
+		return nil
 	}
-	// read daki json nesnesini bir json objesine döndürüyor ve user nesnesine atıyor.
-	err = json.Unmarshal(read, &user)
-	// hata kontrolü
+	userid := helper.AuthId(&c)
+
+	row, err := model.DeleteUser(config.Database, int(req.ID), uint(userid))
+
 	if err != nil {
-		return r.BadRequest(c, "bir hata oluştu")
-	}
-
-	// bu şekilde id değerini aldık
-	fmt.Print(user.ID)
-
-	row, hata := user.DeleteUser(config.Database, int(user.ID))
-
-	if hata != nil {
 		return r.BadRequest(c, "kullanıcı silinemedi")
 	}
 

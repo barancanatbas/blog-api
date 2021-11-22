@@ -123,3 +123,19 @@ func UpdatePost(c echo.Context) error {
 	// response
 	return r.Success(c, "başarılı")
 }
+
+func SearchPost(c echo.Context) error {
+
+	var req request.PostSearchReq
+
+	if helper.Validator(&c, &req) != nil {
+		return nil
+	}
+
+	post, err := model.SearchPost(config.Connect(), req.Key)
+	if err != nil {
+		return r.BadRequest(c, err)
+	}
+
+	return r.Success(c, post)
+}
