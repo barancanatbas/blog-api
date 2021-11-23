@@ -4,7 +4,6 @@ import (
 	"app/api/model"
 	"os"
 
-	"github.com/gomodule/redigo/redis"
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/mysql"
 	"github.com/joho/godotenv"
@@ -12,9 +11,6 @@ import (
 
 // bu nesneyi model kısmında çağırırım
 var Database *gorm.DB
-var pool = newPool()
-
-var Client = pool.Get()
 
 // vt ayarlarını çalıştırma methodu
 func Init() {
@@ -49,18 +45,4 @@ func AutoMigrate() *gorm.DB {
 	Database.Model(&model.Post{}).AddForeignKey("userfk", "users(id)", "cascade", "cascade")
 
 	return migrate
-}
-
-func newPool() *redis.Pool {
-	return &redis.Pool{
-		MaxIdle:   80,
-		MaxActive: 12000,
-		Dial: func() (redis.Conn, error) {
-			c, err := redis.Dial("tcp", ":6379")
-			if err != nil {
-				panic(err.Error())
-			}
-			return c, err
-		},
-	}
 }

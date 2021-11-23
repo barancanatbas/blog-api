@@ -6,37 +6,21 @@ import (
 	"app/api/model"
 	"app/request"
 	r "app/response"
-	"encoding/json"
 	"fmt"
 
-	"github.com/gomodule/redigo/redis"
 	"github.com/labstack/echo/v4"
 )
 
 func GetPosts(c echo.Context) error {
-	post := []model.Post{}
-	val := helper.GetPosts(post)
-	if val == true {
-		val, err := redis.String(config.Client.Do("get", "posts"))
-		helper.Err(err)
-		err = json.Unmarshal([]byte(val), &post)
-		helper.Err(err)
+	post := model.Post{}
 
-		return r.Success(c, post)
-	} else {
-		post := model.Post{}
-		posts, err := post.All(config.Database)
+	posts, err := post.All(config.Database)
 
-		if err != nil {
-			return r.BadRequest(c, "veriler gelmedi")
-		}
-		val := helper.SetPosts(&posts)
-		helper.Err(err)
-		if val == false {
-			fmt.Println("belleğe alınmadı")
-		}
-		return r.Success(c, &posts)
+	if err != nil {
+		return r.BadRequest(c, "veriler gelmedi")
 	}
+
+	return r.Success(c, &posts)
 
 }
 

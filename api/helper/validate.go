@@ -2,6 +2,7 @@ package helper
 
 import (
 	"app/api/config"
+	"app/api/model"
 	"net/http"
 	"strings"
 
@@ -95,8 +96,12 @@ func ValidateWithoutContext(data interface{}) (string, error) {
 }
 
 func AuthId(c *echo.Context) uint32 {
+	user := Auth(c)
+	return uint32(user.ID)
+}
 
+func Auth(c *echo.Context) model.User {
 	user := (*c).Get("user").(*jwt.Token)
 	claims := user.Claims.(*config.JwtCustom)
-	return uint32(claims.ID)
+	return claims.User
 }

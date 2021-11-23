@@ -4,10 +4,9 @@ import (
 	"app/api/config"
 	"app/api/helper"
 	"app/api/model"
+	"app/api/repository"
 	"app/request"
 	r "app/response"
-	"encoding/json"
-	"io/ioutil"
 	"strconv"
 	"time"
 
@@ -23,24 +22,14 @@ type LoginUser struct {
 // özel bir jwt struct
 
 func GetUsers(c echo.Context) error {
-
-	user := model.User{}
-
-	users, err := user.All(config.Database) // model config kısmında yer alan database nesnesi burada
-
-	if err != nil {
-		return r.BadRequest(c, "hata var veri gelmedi")
-	}
-
-	return r.Success(c, &users)
-
+	users, _ := repository.Get().UserR().All()
+	return r.Success(c, users)
 }
 
 func GetUser(c echo.Context) error {
-	db := model.User{}
 	id := c.Param("id")
 
-	user, err := db.GetUser(config.Database, id)
+	user, err := repository.Get().UserR().GetUser(id)
 
 	if err != nil {
 		return r.BadRequest(c, "hata var user bulunamadı")
@@ -50,15 +39,9 @@ func GetUser(c echo.Context) error {
 }
 
 func DeleteUser(c echo.Context) error {
-
-	var req request.UserDelRequest
-
-	if helper.Validator(&c, &req) != nil {
-		return nil
-	}
 	userid := helper.AuthId(&c)
 
-	row, err := model.DeleteUser(config.Database, int(req.ID), uint(userid))
+	row, err := repository.Get().UserR().DeleteUser(uint(userid))
 
 	if err != nil {
 		return r.BadRequest(c, "kullanıcı silinemedi")
@@ -70,21 +53,23 @@ func DeleteUser(c echo.Context) error {
 }
 
 func SaveUser(c echo.Context) error {
-	user := model.User{}
 
-	body, err := ioutil.ReadAll(c.Request().Body)
-	if err != nil {
-		return r.BadRequest(c, "veriler alınamadı")
+	var req request.UserInsert
+
+	if helper.Validator(&c, &req) != nil {
+		return nil
 	}
 
-	err = json.Unmarshal(body, &user)
-	if err != nil {
-		return r.BadRequest(c, "veriler dönüştürülmedi")
+	user := model.User{
+		Name:     req.Name,
+		Password: req.Password,
+		Age:      int(req.Age),
+		Job:      req.Job,
+		Surname:  req.Surname,
 	}
-
 	user.Prepare()
 
-	result, err := user.SaveUser(config.Database)
+	result, err := repository.Get().UserR().SaveUser(user)
 	if err != nil {
 		return r.BadRequest(c, "veri eklenemedi")
 	}
@@ -103,7 +88,7 @@ func Login(c echo.Context) error {
 		Password: req.Password,
 	}
 
-	err := user.Login(config.Database)
+	loginuser, err := repository.Get().UserR().Login(user)
 
 	if err != nil {
 		return r.BadRequest(c, "hata var user login")
@@ -111,9 +96,8 @@ func Login(c echo.Context) error {
 
 	// özel oluşturulmuş bir struct tan bir nesne oluşturduk
 	claims := &config.JwtCustom{
-		Name:          req.Name,
+		User:          *loginuser,
 		Authorization: 1,
-		ID:            uint(user.ID),
 		StandardClaims: jwt.StandardClaims{
 			ExpiresAt: time.Now().Add(time.Hour * 72).Unix(),
 		},
@@ -126,6 +110,7 @@ func Login(c echo.Context) error {
 	}
 	return r.Success(c, echo.Map{
 		"token": &t,
-		"name":  req.Name,
+		"user":  loginuser,
+		"time":  time.Now().Add(time.Hour * 72).Unix(),
 	})
 }
