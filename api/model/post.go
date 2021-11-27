@@ -15,8 +15,9 @@ type Post struct {
 }
 
 type PostForUser struct {
-	Title   string `json:"title"`
-	Content string `json:"content"`
+	Title    string `json:"title"`
+	Content  string `json:"content"`
+	Category Category
 }
 
 func (p *Post) Prepare() {

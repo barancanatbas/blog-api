@@ -35,7 +35,7 @@ func (repo UserRepo) GetUser(uid string) (*model.GetUserResponse, error) {
 	if err != nil {
 		return &rsp, err
 	}
-	err = repo.db.Debug().Model(model.Post{}).Where("userfk = ?", uid).Scan(&rsp.Posts).Error
+	err = repo.db.Debug().Model(model.Post{}).Preload("Category").Where("userfk = ?", uid).Scan(&rsp.Posts).Error
 
 	if err != nil {
 		return &rsp, err
