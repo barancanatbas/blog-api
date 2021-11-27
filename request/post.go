@@ -1,8 +1,9 @@
 package request
 
 type PostReq struct {
-	Title   string `json:"title"`
-	Content string `json:"content"`
+	Title      string `json:"title"`
+	Content    string `json:"content"`
+	CategoryFK uint   `json:"categoryfk"`
 }
 
 type PostUpdateReq struct {

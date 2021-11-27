@@ -12,15 +12,15 @@ import (
 func Set(e *echo.Echo) {
 	e.GET("/", controller.Home)
 
-	e.GET("/post", controller.GetPosts)
-
 	e.POST("/login", controller.Login)
-	e.GET("/users", controller.GetUsers)
-	e.GET("/user/:id", controller.GetUser)
-
 	e.POST("/register", controller.SaveUser)
 
 	e.GET("/posts", controller.GetPosts)
+	e.GET("/post/:id", controller.GetPosts)
+	e.GET("/users", controller.GetUsers)
+	e.GET("/user/:id", controller.GetUser)
+
+	e.GET("/categories", controller.AllCategory)
 
 	admin := e.Group("")
 	admin.Use(middleware.JWTWithConfig(config.JWTConfig))
@@ -35,6 +35,11 @@ func Set(e *echo.Echo) {
 	post.PUT("/post", controller.DeletePost)
 	post.POST("/post/guncelle", controller.UpdatePost)
 	post.POST("/post", controller.GetPost)
+
+	category := admin.Group("")
+	category.POST("/category", controller.SaveCategory)
+	category.DELETE("/category", controller.DeleteCategory)
+	category.PUT("/category", controller.UpdateCategory)
 
 	e.Start(":8080")
 }

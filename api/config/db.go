@@ -39,10 +39,12 @@ func Connect() *gorm.DB {
 func AutoMigrate() *gorm.DB {
 	migrate := Database.AutoMigrate(
 		&model.User{},
+		&model.Category{},
 		&model.Post{},
 	)
 
 	Database.Model(&model.Post{}).AddForeignKey("userfk", "users(id)", "cascade", "cascade")
+	Database.Model(&model.Post{}).AddForeignKey("categoryfk", "categories(id)", "cascade", "cascade")
 
 	return migrate
 }

@@ -44,33 +44,19 @@ func (repo UserRepo) GetUser(uid string) (*model.GetUserResponse, error) {
 }
 
 func (repo UserRepo) DeleteUser(userid uint) (int64, error) {
-
 	u := model.User{}
 	err := repo.db.Debug().Where("id = ?", userid).Delete(&u)
-	if err.Error != nil {
-		return 0, err.Error
-	}
 
 	return err.RowsAffected, err.Error
 }
 
 func (repo UserRepo) SaveUser(user model.User) (*model.User, error) {
-
 	result := repo.db.Debug().Create(&user)
-	if result.Error != nil {
-		return &model.User{}, result.Error
-	}
-
-	return &user, nil
+	return &user, result.Error
 }
 
 func (repo UserRepo) Login(user model.User) (*model.User, error) {
-
 	loginuser := model.User{}
-	err := repo.db.Debug().Model(&model.User{}).Where("password = ? and name = ?", user.Password, user.Name).Take(&loginuser).Error
-
-	if err != nil {
-		return &loginuser, err
-	}
-	return &loginuser, nil
+	err := repo.db.Model(&model.User{}).Where("password = ? and name = ?", user.Password, user.Name).Take(&loginuser).Error
+	return &loginuser, err
 }

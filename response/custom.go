@@ -11,5 +11,5 @@ func Success(c echo.Context, data interface{}) error {
 }
 
 func BadRequest(c echo.Context, data interface{}) error {
-	return c.JSON(http.StatusBadRequest, data)
+	return c.JSON(http.StatusBadRequest, map[string]interface{}{"message": data})
 }
