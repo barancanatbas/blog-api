@@ -19,7 +19,7 @@ type LoginUser struct {
 func GetUsers(c echo.Context) error {
 	users, err := services.UserS().All()
 	if err != nil {
-		return r.BadRequest(c, "kullanıcılar bulunamadı")
+		return r.BadRequest(c, err.Error())
 	}
 	return r.Success(c, users)
 }
@@ -27,7 +27,7 @@ func GetUsers(c echo.Context) error {
 func GetUser(c echo.Context) error {
 	user, err := services.UserS().Get(&c)
 	if err != nil {
-		return r.BadRequest(c, "hata var user bulunamadı")
+		return r.BadRequest(c, err.Error())
 	}
 	return r.Success(c, &user)
 }
@@ -35,7 +35,7 @@ func GetUser(c echo.Context) error {
 func DeleteUser(c echo.Context) error {
 	row, err := services.UserS().Delete(&c)
 	if err != nil {
-		return r.BadRequest(c, "kullanıcı silinemedi")
+		return r.BadRequest(c, err.Error())
 	}
 	return r.Success(c, strconv.Itoa(int(row))+" adet veri silindi")
 }
@@ -43,7 +43,7 @@ func DeleteUser(c echo.Context) error {
 func SaveUser(c echo.Context) error {
 	result, err := services.UserS().Register(&c)
 	if err != nil {
-		return r.BadRequest(c, "veri eklenemedi")
+		return r.BadRequest(c, err.Error())
 	}
 	return r.Success(c, result)
 }
@@ -51,7 +51,7 @@ func SaveUser(c echo.Context) error {
 func Login(c echo.Context) error {
 	loginuser, t, err := services.UserS().Login(&c)
 	if err != nil {
-		return r.BadRequest(c, "Login olamadın")
+		return r.BadRequest(c, err.Error())
 	}
 	return r.Success(c, echo.Map{
 		"token": &t,

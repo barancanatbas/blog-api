@@ -47,7 +47,7 @@ func (p PostRepo) Update(id uint, post model.Post) error {
 	return err.Error
 }
 
-func (p PostRepo) Save(post model.Post) error {
-	err := p.db.Model(&model.Post{}).Save(post)
+func (p PostRepo) Save(post *model.Post) error {
+	err := p.db.Debug().Model(&model.Post{}).Save(&post)
 	return err.Error
 }

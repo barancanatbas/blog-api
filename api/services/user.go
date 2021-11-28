@@ -6,10 +6,12 @@ import (
 	"app/api/model"
 	"app/api/repository"
 	"app/request"
+	"errors"
 	"time"
 
 	"github.com/dgrijalva/jwt-go"
 	"github.com/labstack/echo/v4"
+	"golang.org/x/crypto/bcrypt"
 )
 
 type UserServices struct{}
@@ -20,10 +22,12 @@ func UserS() UserServices {
 
 func (us UserServices) Login(c *echo.Context) (model.User, string, error) {
 	var req request.UserLogin
-	helper.Validator(c, &req)
+	if val := helper.Validator(c, &req); val != "" {
+		return model.User{}, "", errors.New(val)
+	}
 
 	user := model.User{
-		Name:     req.Name,
+		UserName: req.UserName,
 		Password: req.Password,
 	}
 
@@ -31,6 +35,11 @@ func (us UserServices) Login(c *echo.Context) (model.User, string, error) {
 
 	if err != nil {
 		return model.User{}, "", err
+	}
+
+	passwordControl := bcrypt.CompareHashAndPassword([]byte(loginuser.Password), []byte(req.Password))
+	if passwordControl != nil {
+		return model.User{}, "", errors.New("şifre doğrulanmadı")
 	}
 
 	// özel oluşturulmuş bir struct tan bir nesne oluşturduk
@@ -53,14 +62,17 @@ func (us UserServices) Login(c *echo.Context) (model.User, string, error) {
 
 func (us UserServices) Register(c *echo.Context) (model.User, error) {
 	var req request.UserInsert
-	helper.Validator(c, &req)
-
+	if val := helper.Validator(c, &req); val != "" {
+		return model.User{}, errors.New(val)
+	}
+	password, _ := bcrypt.GenerateFromPassword([]byte(req.Password), 4)
 	user := model.User{
 		Name:     req.Name,
-		Password: req.Password,
+		Password: string(password),
 		Age:      int(req.Age),
 		Job:      req.Job,
 		Surname:  req.Surname,
+		UserName: req.UserName,
 	}
 	user.Prepare()
 

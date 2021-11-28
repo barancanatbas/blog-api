@@ -1,9 +1,9 @@
 package request
 
 type PostReq struct {
-	Title      string `json:"title"`
-	Content    string `json:"content"`
-	CategoryFK uint   `json:"categoryfk"`
+	Title      string `json:"title" validate:"required"`
+	Content    string `json:"content" validate:"required"`
+	CategoryFK uint   `json:"categoryfk" validate:"required"`
 }
 
 type PostUpdateReq struct {

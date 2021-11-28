@@ -35,3 +35,10 @@ func (c CategoryRepo) Delete(id uint) error {
 	err := c.db.Model(&model.Category{}).Where("id = ?", id).Delete(&model.Category{})
 	return err.Error
 }
+
+func (c CategoryRepo) Exists(id uint) int {
+	category := model.Category{}
+	rowsAffected := c.db.Debug().Model(&model.Category{}).Where("id = ?", id).Find(&category)
+
+	return int(rowsAffected.RowsAffected)
+}

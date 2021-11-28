@@ -3,7 +3,6 @@ package helper
 import (
 	"app/api/config"
 	"app/api/model"
-	"net/http"
 	"strings"
 
 	"github.com/go-playground/locales/en"
@@ -14,7 +13,7 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-func Validator(c *echo.Context, requestRules interface{}) error {
+func Validator(c *echo.Context, requestRules interface{}) string {
 	var (
 		uni   *ut.UniversalTranslator
 		trans ut.Translator
@@ -29,7 +28,7 @@ func Validator(c *echo.Context, requestRules interface{}) error {
 	_ = (*c).Bind(requestRules)
 	err := validate.Struct(requestRules)
 	if err == nil {
-		return nil
+		return ""
 	}
 
 	translateErrors := err.(validator.ValidationErrors).Translate(trans)
@@ -44,9 +43,7 @@ func Validator(c *echo.Context, requestRules interface{}) error {
 		}
 		translateErrorsString += ", "
 	}
-
-	_ = (*c).JSON(http.StatusBadRequest, translateErrorsString)
-	return err
+	return translateErrorsString
 
 }
 

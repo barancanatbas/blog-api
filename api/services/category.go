@@ -5,6 +5,7 @@ import (
 	"app/api/model"
 	"app/api/repository"
 	"app/request"
+	"errors"
 
 	"github.com/labstack/echo/v4"
 )
@@ -22,7 +23,9 @@ func (cs CategoryServices) All() ([]model.Category, error) {
 
 func (cs CategoryServices) Save(c *echo.Context) error {
 	var req request.CategorySave
-	helper.Validator(c, &req)
+	if val := helper.Validator(c, &req); val != "" {
+		return errors.New(val)
+	}
 
 	category := model.Category{
 		Name: req.Name,
@@ -34,7 +37,9 @@ func (cs CategoryServices) Save(c *echo.Context) error {
 
 func (cs CategoryServices) Delete(c *echo.Context) error {
 	var req request.CategoryDelete
-	helper.Validator(c, &req)
+	if val := helper.Validator(c, &req); val != "" {
+		return errors.New(val)
+	}
 
 	err := repository.Get().Category().Delete(req.Id)
 	return err
@@ -42,7 +47,9 @@ func (cs CategoryServices) Delete(c *echo.Context) error {
 
 func (cs CategoryServices) Update(c *echo.Context) error {
 	var req request.CategoryUpdate
-	helper.Validator(c, &req)
+	if val := helper.Validator(c, &req); val != "" {
+		return errors.New(val)
+	}
 
 	category := model.Category{
 		Name: req.Name,

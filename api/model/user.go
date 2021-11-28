@@ -11,6 +11,7 @@ type User struct {
 	Age      int    `json:"age"`
 	Job      string `json:"job"`
 	Password string `json:"-"`
+	UserName string `json:"username"`
 }
 
 type GetUserResponse struct {

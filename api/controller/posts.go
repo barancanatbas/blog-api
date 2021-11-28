@@ -10,7 +10,7 @@ import (
 func GetPosts(c echo.Context) error {
 	err, posts := services.PostS().All()
 	if err != nil {
-		return r.BadRequest(c, err)
+		return r.BadRequest(c, err.Error())
 	}
 
 	return r.Success(c, &posts)
@@ -27,7 +27,7 @@ func GetPost(c echo.Context) error {
 func SavePost(c echo.Context) error {
 	err := services.PostS().Save(&c)
 	if err != nil {
-		return r.BadRequest(c, "bir hata var veri yok")
+		return r.BadRequest(c, err.Error())
 	}
 
 	return r.Success(c, "Ekleme başarılı")
@@ -53,7 +53,7 @@ func UpdatePost(c echo.Context) error {
 func SearchPost(c echo.Context) error {
 	posts, err := services.PostS().Search(&c)
 	if err != nil {
-		return r.BadRequest(c, err)
+		return r.BadRequest(c, err.Error())
 	}
 
 	return r.Success(c, posts)

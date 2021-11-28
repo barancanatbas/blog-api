@@ -16,7 +16,7 @@ func Set(e *echo.Echo) {
 	e.POST("/register", controller.SaveUser)
 
 	e.GET("/posts", controller.GetPosts)
-	e.GET("/post/:id", controller.GetPosts)
+	e.GET("/post/:id", controller.GetPost)
 	e.GET("/users", controller.GetUsers)
 	e.GET("/user/:id", controller.GetUser)
 
@@ -31,10 +31,9 @@ func Set(e *echo.Echo) {
 
 	post := admin.Group("")
 	e.GET("/post/search/:key", controller.SearchPost)
-	post.POST("/add/post", controller.SavePost)
-	post.PUT("/post", controller.DeletePost)
-	post.POST("/post/guncelle", controller.UpdatePost)
-	post.POST("/post", controller.GetPost)
+	post.POST("/post", controller.SavePost)
+	post.DELETE("/post", controller.DeletePost)
+	post.PUT("/post", controller.UpdatePost)
 
 	category := admin.Group("")
 	category.POST("/category", controller.SaveCategory)

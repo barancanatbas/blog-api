@@ -1,7 +1,7 @@
 package request
 
 type UserLogin struct {
-	Name     string `validate:"required"`
+	UserName string `validate:"required" json:"username"`
 	Password string `validate:"required"`
 }
 type UserDelRequest struct {
@@ -14,4 +14,5 @@ type UserInsert struct {
 	Surname  string `validate:"required" json:"surname"`
 	Age      uint   `validate:"required" json:"age"`
 	Job      string `validate:"required" json:"job"`
+	UserName string `validate:"required" json:"username"`
 }

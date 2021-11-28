@@ -57,6 +57,6 @@ func (repo UserRepo) SaveUser(user model.User) (*model.User, error) {
 
 func (repo UserRepo) Login(user model.User) (*model.User, error) {
 	loginuser := model.User{}
-	err := repo.db.Model(&model.User{}).Where("password = ? and name = ?", user.Password, user.Name).Take(&loginuser).Error
+	err := repo.db.Model(&model.User{}).Where("user_name = ?", user.UserName).Take(&loginuser).Error
 	return &loginuser, err
 }
